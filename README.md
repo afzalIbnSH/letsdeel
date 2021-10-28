@@ -124,3 +124,10 @@ When you have finished the assignment, create a github repository and send us th
   
 
 Thank you and good luck! 🙏
+
+
+## Submission
+
+### Test
+
+Run `npm test`
