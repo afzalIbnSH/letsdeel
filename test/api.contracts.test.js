@@ -1,7 +1,9 @@
+require('module-alias/register')
+
 const chai = require('chai')
 const request = require('supertest');
 
-const app = require('../../../app');
+const app = require('src/app');
 
 chai.should()
 

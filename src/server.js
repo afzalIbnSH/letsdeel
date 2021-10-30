@@ -1,4 +1,6 @@
-const app = require('./app');
+require('module-alias/register')
+
+const app = require('src/app');
 
 init();
 

@@ -1,7 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { sequelize } = require('./model')
-const { getProfile } = require('./middleware/getProfile')
+
+const { sequelize } = require('src/model')
+const { getProfile } = require('src/middleware/getProfile')
+
 const app = express();
 app.use(bodyParser.json());
 app.set('sequelize', sequelize)
