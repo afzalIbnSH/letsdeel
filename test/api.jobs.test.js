@@ -4,6 +4,7 @@ const chai = require('chai')
 const request = require('supertest');
 
 const app = require('src/app');
+const { Job, Contract } = require('src/model')
 
 chai.should()
 
@@ -71,5 +72,57 @@ describe('GET /jobs/unpaid', function () {
                 done()
             })
             .catch(done)
+    })
+})
+
+describe('POST /jobs/{id}/pay', function () {
+    it('raises 404 if the API is called by not the right client', (done) => {
+        request(app)
+            .post('/jobs/5/pay')
+            .set('Accept', 'application/json')
+            .set('profile_id', 3)
+            .expect(404, done)
+    })
+
+    it('raises 400 if the client has insufficient balance', (done) => {
+        request(app)
+            .post('/jobs/5/pay')
+            .set('Accept', 'application/json')
+            .set('profile_id', 4)
+            .expect(400)
+            .then(res => {
+                res.body.should.deep.equal({ message: 'Insufficient balance' })
+                done()
+            })
+            .catch(e => done(e))
+    })
+
+    it('updates job as paid and update balances on success', (done) => {
+        const jobId = 2;
+        request(app)
+            .post(`/jobs/${jobId}/pay`)
+            .set('Accept', 'application/json')
+            .set('profile_id', 1)
+            .expect(201)
+            .then(res =>
+                Job.findOne({
+                    where: {
+                        id: jobId
+                    },
+                    include: [{
+                        model: Contract,
+                        attributes: ['ClientId', 'ContractorId'],
+                        required: true,
+                        include: ['Contractor', 'Client']
+                    }]
+                })
+            )
+            .then(job => {
+                job.paid.should.equal(true)
+                job.Contract.Contractor.balance.should.equal(1415)
+                job.Contract.Client.balance.should.equal(949)
+                done()
+            })
+            .catch(e => done(e))
     })
 })

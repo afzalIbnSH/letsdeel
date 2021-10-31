@@ -15,7 +15,7 @@
   "scripts": {
     "start": "nodemon ./src/server.js",
     "seed": "node ./scripts/seedDb.js",
-    "test": "mocha"
+    "test": "rm -rf database.sqlite3 && node ./scripts/seedDb.js && mocha"
   },
   "devDependencies": {
     "chai": "^4.3.4",

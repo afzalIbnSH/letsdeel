@@ -29,4 +29,58 @@ router.get('/unpaid', async (req, res) => {
     res.json(unpaidJobs)
 })
 
+/**
+ * Pay for a job
+ * @returns the updated job data
+ */
+router.post('/:id/pay', async (req, res) => {
+    const sequelize = req.app.get('sequelize')
+    const { Contract, Job, Profile } = req.app.get('models')
+    const { id } = req.params
+
+    const job = await Job.findOne({
+        where: {
+            id,
+            // Ensure the API is called by the corresponding client
+            '$Contract.ClientId$': req.profile.id
+        },
+        include: [{
+            model: Contract,
+            attributes: ['ClientId', 'ContractorId'],
+            required: true,
+            include: ['Contractor', 'Client']
+        }]
+    })
+
+    if (!job) return res.status(404).end()
+
+    if (job.price > job.Contract.Client.balance) return res.status(400).json({
+        message: 'Insufficient balance'
+    })
+
+    try {
+        let transaction = await sequelize.transaction();
+        await Profile.update(
+            { balance: job.Contract.Client.balance - job.price },
+            { where: { id: job.Contract.Client.id } },
+            { transaction }
+        )
+        await Profile.update(
+            { balance: job.Contract.Contractor.balance + job.price },
+            { where: { id: job.Contract.Contractor.id } },
+            { transaction }
+        )
+        await Job.update(
+            { paid: true },
+            { where: { id: job.id } },
+            { transaction }
+        )
+        await transaction.commit();
+    } catch (err) {
+        if (transaction) await transaction.rollback();
+    }
+
+    res.status(201).json()
+})
+
 module.exports = router;
