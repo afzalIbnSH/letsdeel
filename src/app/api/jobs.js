@@ -31,7 +31,6 @@ router.get('/unpaid', async (req, res) => {
 
 /**
  * Pay for a job
- * @returns the updated job data
  */
 router.post('/:id/pay', async (req, res) => {
     const sequelize = req.app.get('sequelize')
@@ -80,7 +79,7 @@ router.post('/:id/pay', async (req, res) => {
         if (transaction) await transaction.rollback();
     }
 
-    res.status(201).json()
+    res.status(201).end()
 })
 
 module.exports = router;

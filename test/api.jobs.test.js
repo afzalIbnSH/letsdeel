@@ -1,12 +1,8 @@
 require('module-alias/register')
-
-const chai = require('chai')
 const request = require('supertest');
 
 const app = require('src/app');
 const { Job, Contract } = require('src/model')
-
-chai.should()
 
 describe('GET /jobs/unpaid', function () {
     it('returns just the unpaid jobs of a client', (done) => {
@@ -99,16 +95,34 @@ describe('POST /jobs/{id}/pay', function () {
 
     it('updates job as paid and update balances on success', (done) => {
         const jobId = 2;
-        request(app)
-            .post(`/jobs/${jobId}/pay`)
-            .set('Accept', 'application/json')
-            .set('profile_id', 1)
-            .expect(201)
+        let job;
+        Job.findOne({
+            where: {
+                id: jobId
+            },
+            attributes: ['paid'],
+            include: [{
+                model: Contract,
+                attributes: ['ClientId', 'ContractorId'],
+                required: true,
+                include: ['Contractor', 'Client']
+            }]
+        })
+            .then(res => {
+                job = res;
+                (job.paid === null).should.equal(true)
+                return request(app)
+                    .post(`/jobs/${jobId}/pay`)
+                    .set('Accept', 'application/json')
+                    .set('profile_id', 1)
+                    .expect(201)
+            })
             .then(res =>
                 Job.findOne({
                     where: {
                         id: jobId
                     },
+                    attributes: ['paid'],
                     include: [{
                         model: Contract,
                         attributes: ['ClientId', 'ContractorId'],
@@ -117,10 +131,10 @@ describe('POST /jobs/{id}/pay', function () {
                     }]
                 })
             )
-            .then(job => {
-                job.paid.should.equal(true)
-                job.Contract.Contractor.balance.should.equal(1415)
-                job.Contract.Client.balance.should.equal(949)
+            .then(updatedJob => {
+                updatedJob.paid.should.equal(true);
+                (updatedJob.Contract.Contractor.balance - job.Contract.Contractor.balance).should.equal(201);
+                (updatedJob.Contract.Client.balance - job.Contract.Client.balance).should.equal(-201)
                 done()
             })
             .catch(e => done(e))

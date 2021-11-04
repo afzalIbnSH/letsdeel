@@ -1,11 +1,7 @@
 require('module-alias/register')
-
-const chai = require('chai')
 const request = require('supertest');
 
 const app = require('src/app');
-
-chai.should()
 
 describe('GET /contracts', function () {
     it('does not return terminated contracts', (done) => {
