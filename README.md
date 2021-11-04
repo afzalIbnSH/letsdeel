@@ -131,3 +131,9 @@ Thank you and good luck! 🙏
 ### Test
 
 Run `npm test`
+
+This resets the db and runs tests defined under `test/`
+
+Rooms to improve
+- Configure a separate db for tests
+- Rollback db changes after every test so that the tests are independent.
