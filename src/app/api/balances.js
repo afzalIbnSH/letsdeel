@@ -48,6 +48,8 @@ router.post('/deposit/:userId', async (req, res) => {
     })
     const debt = jobsToPay.reduce((partial_sum, job) => partial_sum + job.price, 0)
 
+    // I'm not sure how this is sensible logic.
+    // Was this actually meant to be *4 of the total debt?
     if (amount > (debt / 4)) {
         return res.status(400).json({
             message: 'Amount can\'t be greater than 25% of your total debt'
