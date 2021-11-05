@@ -70,7 +70,7 @@ router.post('/:id/pay', async (req, res) => {
             { transaction }
         )
         await Job.update(
-            { paid: true },
+            { paid: true, paymentDate: new Date().toISOString() },
             { where: { id: job.id } },
             { transaction }
         )

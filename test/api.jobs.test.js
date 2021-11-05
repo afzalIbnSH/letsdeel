@@ -100,7 +100,7 @@ describe('POST /jobs/{id}/pay', () => {
             where: {
                 id: jobId
             },
-            attributes: ['paid'],
+            attributes: ['paid', 'paymentDate'],
             include: [{
                 model: Contract,
                 attributes: ['ClientId', 'ContractorId'],
@@ -110,7 +110,8 @@ describe('POST /jobs/{id}/pay', () => {
         })
             .then(res => {
                 job = res;
-                (job.paid === null).should.equal(true)
+                (job.paid === null).should.equal(true);
+                (job.paymentDate === null).should.equal(true);
                 return request(app)
                     .post(`/jobs/${jobId}/pay`)
                     .set('Accept', 'application/json')
@@ -122,7 +123,7 @@ describe('POST /jobs/{id}/pay', () => {
                     where: {
                         id: jobId
                     },
-                    attributes: ['paid'],
+                    attributes: ['paid', 'paymentDate'],
                     include: [{
                         model: Contract,
                         attributes: ['ClientId', 'ContractorId'],
@@ -133,6 +134,9 @@ describe('POST /jobs/{id}/pay', () => {
             )
             .then(updatedJob => {
                 updatedJob.paid.should.equal(true);
+                const now = new Date()
+                const paymentDate = new Date(updatedJob.paymentDate);
+                ((now.getTime() - paymentDate.getTime()) / 1000).should.be.lt(1);
                 (updatedJob.Contract.Contractor.balance - job.Contract.Contractor.balance).should.equal(201);
                 (updatedJob.Contract.Client.balance - job.Contract.Client.balance).should.equal(-201)
                 done()
