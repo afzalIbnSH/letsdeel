@@ -186,6 +186,13 @@ async function seed() {
     }),
     Job.create({
       description: 'work',
+      price: 2000,
+      paid: true,
+      paymentDate: '2020-08-15T19:11:26.737Z',
+      ContractId: 2,
+    }),
+    Job.create({
+      description: 'work',
       price: 200,
       paid: true,
       paymentDate: '2020-08-16T19:11:26.737Z',

@@ -16,6 +16,18 @@ router.use(async (req, res, next) => {
     next()
 })
 
+function validateTimeRange(start, end) {
+    if (!start || !end) {
+        throw 'Missing one or both of required query params: "start", "end"'
+    }
+    start = new Date(start)
+    end = new Date(end)
+    if (!start.isValid() || !end.isValid()) {
+        throw 'One or both of start and end dates are invalid'
+    }
+    return [start, end]
+}
+
 /**
  * Returns the profession that earned the most money (sum of jobs paid)
  * for any contractor in a given time range.
@@ -25,18 +37,11 @@ router.get('/best-profession', async (req, res) => {
     const { Job } = req.app.get('models')
     const sequelize = req.app.get('sequelize')
 
-    // Room to improve: Plug-in a generic validator
-    if (!start || !end) {
-        return res.status(400).json({
-            message: 'Missing one or both of required query params: "start", "end"'
-        })
+    try {
+        [start, end] = validateTimeRange(start, end)
     }
-    start = new Date(start)
-    end = new Date(end)
-    if (!start.isValid() || !end.isValid()) {
-        return res.status(400).json({
-            message: 'One or both of start and end dates are invalid'
-        })
+    catch (errMsg) {
+        return res.status(400).json({ message: errMsg })
     }
 
     const respectiveContractsSortedByMoneyEarned = await Job.findAll({
@@ -62,6 +67,36 @@ router.get('/best-profession', async (req, res) => {
  * Default limit is 2.
  */
 router.get('/best-clients', async (req, res) => {
+    let { start, end } = req.query
+    const { Job, Contract } = req.app.get('models')
+    const sequelize = req.app.get('sequelize')
+
+    try {
+        [start, end] = validateTimeRange(start, end)
+    }
+    catch (errMsg) {
+        return res.status(400).json({ message: errMsg })
+    }
+
+    return res.json(await Job.findAll({
+        where: {
+            paymentDate: {
+                [Op.between]: [start, end]
+            }
+        },
+        include: [{
+            model: Contract,
+            required: true,
+            attributes: ['ClientId']
+        }],
+        attributes: [
+            [sequelize.fn('sum', sequelize.col('price')), 'MoneyPaid']
+        ],
+        group: ['Contract.ClientId'],
+        order: [
+            [sequelize.fn('sum', sequelize.col('price')), 'DESC']
+        ]
+    }))
 })
 
 module.exports = router
