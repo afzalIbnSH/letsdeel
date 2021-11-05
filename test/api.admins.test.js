@@ -11,6 +11,45 @@ describe('GET /admins/best-profession', () => {
             .set('profile_id', 3)
             .expect(403, done)
     })
+
+    it('raises 400 if the one or both of start and end dates are missing', (done) => {
+        request(app)
+            .get('/admins/best-profession')
+            .set('Accept', 'application/json')
+            .set('profile_id', 9)
+            .expect(400)
+            .then(res => {
+                res.body.should.deep.equal({ message: 'Missing one or both of required query params: "start", "end"' })
+                done()
+            })
+            .catch(e => done(e))
+    })
+
+    it('raises 400 if the one or both of start and end dates are invalid', (done) => {
+        request(app)
+            .get('/admins/best-profession?start=2020-08-16&end=invalid')
+            .set('Accept', 'application/json')
+            .set('profile_id', 9)
+            .expect(400)
+            .then(res => {
+                res.body.should.deep.equal({ message: 'One or both of start and end dates are invalid' })
+                done()
+            })
+            .catch(e => done(e))
+    })
+
+    it('on success, returns the profession that earned the most money in a given time range', (done) => {
+        request(app)
+            .get('/admins/best-profession?start=2020-08-15&end=2020-08-16')
+            .set('Accept', 'application/json')
+            .set('profile_id', 9)
+            .expect(200)
+            .then(res => {
+                res.body.should.deep.equal({ ContractId: 7, MoneyEarned: 2020 })
+                done()
+            })
+            .catch(e => done(e))
+    })
 })
 
 describe('GET /admins/best-clients', () => {
