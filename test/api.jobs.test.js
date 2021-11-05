@@ -4,7 +4,7 @@ const request = require('supertest');
 const app = require('src/app');
 const { Job, Contract } = require('src/model')
 
-describe('GET /jobs/unpaid', function () {
+describe('GET /jobs/unpaid', () => {
     it('returns just the unpaid jobs of a client', (done) => {
         request(app)
             .get('/jobs/unpaid')
@@ -71,7 +71,7 @@ describe('GET /jobs/unpaid', function () {
     })
 })
 
-describe('POST /jobs/{id}/pay', function () {
+describe('POST /jobs/{id}/pay', () => {
     it('raises 404 if the API is called by not the right client', (done) => {
         request(app)
             .post('/jobs/5/pay')

@@ -4,7 +4,7 @@ const request = require('supertest');
 const app = require('src/app');
 const { Profile } = require('src/model')
 
-describe('POST /balances/deposit/{userId}', function () {
+describe('POST /balances/deposit/{userId}', () => {
     it('raises 404 if the API is not called by the right client', (done) => {
         request(app)
             .post('/balances/deposit/4')

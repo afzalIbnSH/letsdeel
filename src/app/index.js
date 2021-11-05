@@ -5,6 +5,7 @@ const { getProfile } = require('src/middleware/getProfile')
 const contracts = require('src/app/api/contracts')
 const jobs = require('src/app/api/jobs')
 const balances = require('src/app/api/balances')
+const admins = require('src/app/api/admins')
 
 const app = express();
 app.use(express.json());
@@ -15,5 +16,6 @@ app.use(getProfile)
 app.use('/contracts', contracts)
 app.use('/jobs', jobs)
 app.use('/balances', balances)
+app.use('/admins', admins)
 
 module.exports = app

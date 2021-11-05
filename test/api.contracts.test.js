@@ -3,7 +3,7 @@ const request = require('supertest');
 
 const app = require('src/app');
 
-describe('GET /contracts', function () {
+describe('GET /contracts', () => {
     it('does not return terminated contracts', (done) => {
         request(app)
             .get('/contracts')
@@ -100,7 +100,7 @@ describe('GET /contracts', function () {
     })
 })
 
-describe('GET /contracts/{id}', function () {
+describe('GET /contracts/{id}', () => {
     it('raises 404 if id is non existent', (done) => {
         request(app)
             .get('/contracts/10')
